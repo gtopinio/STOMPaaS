@@ -1,4 +1,4 @@
-package github.gtopinio.STOMPaaS.controller;
+package github.gtopinio.STOMPaaS.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
