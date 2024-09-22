@@ -40,6 +40,7 @@ public class SocketInputValidator implements Validator {
         return true;
     }
 
+    @Override
     public <T extends Enum<T>> boolean isEnumValue(String value, Class<T> enumClass) {
         try {
             Enum.valueOf(enumClass, value);
@@ -49,6 +50,7 @@ public class SocketInputValidator implements Validator {
         }
     }
 
+    @Override
     public boolean isUUID(String value) {
         try {
             UUID.fromString(value);
