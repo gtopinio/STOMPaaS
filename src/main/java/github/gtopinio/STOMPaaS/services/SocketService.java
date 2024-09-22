@@ -3,30 +3,27 @@ package github.gtopinio.STOMPaaS.services;
 import github.gtopinio.STOMPaaS.models.DTOs.SocketDTO;
 import github.gtopinio.STOMPaaS.models.factories.SocketSessionResponseFactory;
 import github.gtopinio.STOMPaaS.models.helpers.SocketInputValidator;
+import github.gtopinio.STOMPaaS.models.helpers.SocketSessionMapper;
 import github.gtopinio.STOMPaaS.models.response.SocketSessionResponse;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Service
 public class SocketService {
     private final SimpMessagingTemplate messagingTemplate;
-    private final Map<UUID, List<UUID>> socketSessionMapping; // Key: SocketRoomId, Value: List of SocketIds of members in the room
     private final SocketInputValidator socketInputValidator;
+    private final SocketSessionMapper socketSessionMapper;
 
     public SocketService(
         SimpMessagingTemplate messagingTemplate,
-        SocketInputValidator socketInputValidator
+        SocketInputValidator socketInputValidator,
+        SocketSessionMapper socketSessionMapper
     ) {
         this.messagingTemplate = messagingTemplate;
-        this.socketSessionMapping = new ConcurrentHashMap<>();
         this.socketInputValidator = socketInputValidator;
+        this.socketSessionMapper = socketSessionMapper;
     }
 
     /**
@@ -40,8 +37,7 @@ public class SocketService {
         SimpMessageHeaderAccessor headerAccessor
     ) {
         // Validate input
-        boolean isValid = this.socketInputValidator.validate(input);
-        if (!isValid) {
+        if (!this.socketInputValidator.validate(input)) {
             return SocketSessionResponseFactory.createBadRequestResponse(null, "Invalid input");
         }
 

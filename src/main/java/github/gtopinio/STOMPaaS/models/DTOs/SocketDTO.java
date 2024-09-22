@@ -17,6 +17,6 @@ public class SocketDTO {
     private UUID senderSocketId; // Implementation is DB specific (can be omitted in non-DB implementations)
     private UUID receiverSocketId; // Implementation is DB specific (can be omitted in non-DB implementations)
     private UUID socketRoomId; // Can be null at first, but must be set before sending a message in existing session
-    private UUID organizationId; // If org is not present, it is not DB specific
+    private UUID organizationId; // If org is not present, it is not DB specific. If it is, persistence is required
     private MessageType messageType;
 }
