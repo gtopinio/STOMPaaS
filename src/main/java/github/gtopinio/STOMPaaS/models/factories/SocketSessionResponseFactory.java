@@ -1,6 +1,6 @@
 package github.gtopinio.STOMPaaS.models.factories;
 
-import github.gtopinio.STOMPaaS.models.helpers.SocketSessionResponse;
+import github.gtopinio.STOMPaaS.models.response.SocketSessionResponse;
 import org.springframework.http.HttpStatus;
 
 import java.util.UUID;
