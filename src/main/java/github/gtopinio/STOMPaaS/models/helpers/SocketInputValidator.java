@@ -1,6 +1,7 @@
 package github.gtopinio.STOMPaaS.models.helpers;
 
 import github.gtopinio.STOMPaaS.models.DTOs.SocketDTO;
+import github.gtopinio.STOMPaaS.models.enums.MessageType;
 import github.gtopinio.STOMPaaS.models.interfaces.Validator;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,7 @@ public class SocketInputValidator implements Validator {
             return false;
         }
 
-        if (input.getMessageType() == null) {
+        if (input.getMessageType() == null || !isEnumValue(input.getMessageType().name(), MessageType.class)) {
             return false;
         }
 
@@ -23,5 +24,14 @@ public class SocketInputValidator implements Validator {
         }
 
         return true;
+    }
+
+    public <T extends Enum<T>> boolean isEnumValue(String value, Class<T> enumClass) {
+        try {
+            Enum.valueOf(enumClass, value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }
