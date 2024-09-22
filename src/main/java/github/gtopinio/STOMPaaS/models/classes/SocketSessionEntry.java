@@ -2,7 +2,7 @@ package github.gtopinio.STOMPaaS.models.classes;
 
 import lombok.*;
 
-import java.util.UUID;
+import java.util.List;
 
 @Getter
 @Setter
@@ -10,6 +10,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class SocketSessionEntry {
-    private UUID senderSocketId;
-    private UUID organizationId;
+    private List<SocketUser> socketUserList;
+    private List<String> socketRoomCategoryList; // Can be used for categorizing rooms (i.e., like a tag); Can be null for persistent sessions
+    private Boolean isForMultipleUsers;
 }
