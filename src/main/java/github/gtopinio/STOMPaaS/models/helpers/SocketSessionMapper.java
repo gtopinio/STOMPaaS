@@ -1,5 +1,6 @@
 package github.gtopinio.STOMPaaS.models.helpers;
 
+import github.gtopinio.STOMPaaS.models.classes.SocketSessionEntry;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class SocketSessionMapper {
-    private final Map<UUID, List<UUID>> socketSessionMapping; // Key: SocketRoomId, Value: List of SocketIds of members in the room
+    private final Map<UUID, List<SocketSessionEntry>> socketSessionMapping; // Key: SocketRoomId, Value: List of entries in a room
 
     public SocketSessionMapper() {
         this.socketSessionMapping = new ConcurrentHashMap<>();
