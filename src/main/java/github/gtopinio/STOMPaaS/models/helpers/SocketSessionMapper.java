@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class SocketSessionMapper {
@@ -39,11 +40,38 @@ public class SocketSessionMapper {
                 .build();
     }
 
+    /**
+     * This method is used to create a new socket session entry.
+     *
+     * @param categories The list of categories.
+     * @param isMultipleUsers The boolean value indicating if the session is for multiple users.
+     */
+    public SocketSessionEntry createSocketSessionEntry(
+            List<String> categories,
+            Boolean isMultipleUsers
+    ) {
+        return SocketSessionEntry.builder()
+                .socketUserList(new CopyOnWriteArrayList<>())
+                .socketRoomCategoryList(categories)
+                .isForMultipleUsers(isMultipleUsers)
+                .build();
+    }
+
+    /**
+     * This method is used for socket sessions that are trying to JOIN a room.
+     *
+     * @param senderSocketId The UUID of the sender socket.
+     * @param organizationId The UUID of the organization.
+     * @param categories The list of categories.
+     * @param socketRoomId The UUID of the socket room.
+     * @param isMultipleUsers The boolean value indicating if the session is for multiple users.
+     */
     public void upsertSocketSession(
             UUID senderSocketId,
             UUID organizationId,
             List<String> categories,
-            UUID socketRoomId
+            UUID socketRoomId,
+            Boolean isMultipleUsers
     ) {
         // Two cases:
         // 1. For generic chat rooms (private or grouped).
@@ -55,8 +83,15 @@ public class SocketSessionMapper {
         //      - User already has a session room id and is messaging
         if (this.doesSocketRoomExist(socketRoomId)) {
             // This means that the socket room already exists and a new user is trying to join
-        } else {
+            // Get the existing socket session entry
+            var socketSessionEntry = this.socketSessionMapping.get(socketRoomId);
+            socketSessionEntry.getSocketUserList().add(this.createSocketUser(senderSocketId, organizationId));
+            this.socketSessionMapping.put(socketRoomId, socketSessionEntry);
 
+        } else {
+            var socketSessionEntry = this.createSocketSessionEntry(categories, isMultipleUsers);
+            socketSessionEntry.getSocketUserList().add(this.createSocketUser(senderSocketId, organizationId));
+            this.socketSessionMapping.put(socketRoomId, socketSessionEntry);
         }
     }
 
