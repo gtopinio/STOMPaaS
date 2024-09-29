@@ -120,4 +120,24 @@ public class SocketSessionMapper {
             return socketRoomId;
         }
     }
+
+    public boolean removeSocketSession(
+        UUID senderSocketId,
+        UUID socketRoomId
+    ) {
+        if (this.doesSocketRoomExist(socketRoomId)) {
+            SocketSessionEntry socketSessionEntry = this.socketSessionMapping.get(socketRoomId);
+            List<SocketUser> socketUserList = socketSessionEntry.getSocketUserList();
+
+            for (SocketUser socketUser : socketUserList) {
+                if (socketUser.getSenderSocketId().equals(senderSocketId)) {
+                    socketUserList.remove(socketUser);
+                    socketSessionEntry.setSocketUserList(socketUserList);
+                    this.socketSessionMapping.put(socketRoomId, socketSessionEntry);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

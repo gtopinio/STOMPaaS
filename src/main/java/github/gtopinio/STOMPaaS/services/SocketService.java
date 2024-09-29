@@ -11,7 +11,9 @@ import github.gtopinio.STOMPaaS.models.response.SocketSessionResponse;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -73,6 +75,32 @@ public class SocketService {
         this.handleJoinMessage(headerAccessor, input.getSenderSocketId(), input.getSocketRoomId(), responseMessage);
 
         return SocketSessionResponseFactory.createSuccessResponse(responseID, "Socket session linked successfully");
+    }
+
+    /**
+     * This service method is used to handle the session disconnect event.
+     *
+     * @param event The SessionDisconnectEvent object containing the session disconnect event details.
+     */
+    public SocketSessionResponse unlinkSocketSession(SessionDisconnectEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+
+        UUID socketRoomId = UUID.fromString(Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("socketRoomId").toString());
+        UUID senderSocketId = UUID.fromString(Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("senderSocketId").toString());
+
+        if (this.socketSessionMapper.removeSocketSession(senderSocketId, socketRoomId)) {
+            var responseMessage = SocketMessage.builder()
+                    .content("User has left the chat")
+                    .senderUsername(UserType.SYSTEM.toString())
+                    .senderSocketId(null)
+                    .type(MessageType.LEAVE)
+                    .build();
+
+            this.broadcastMessage(socketRoomId, responseMessage);
+            return SocketSessionResponseFactory.createSuccessResponse(null, "Socket session unlinked successfully");
+        }
+
+        return SocketSessionResponseFactory.createErrorResponse(null, "Error unlinking socket session");
     }
 
     /**
