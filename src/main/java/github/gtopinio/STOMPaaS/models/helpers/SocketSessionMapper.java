@@ -137,7 +137,18 @@ public class SocketSessionMapper {
                     return true;
                 }
             }
+
+            this.cleanUpSocketRoom(socketRoomId);
         }
         return false;
+    }
+
+    private void cleanUpSocketRoom(UUID socketRoomId) {
+        if (this.doesSocketRoomExist(socketRoomId)) {
+            SocketSessionEntry socketSessionEntry = this.socketSessionMapping.get(socketRoomId);
+            if (socketSessionEntry.getSocketUserList().isEmpty()) {
+                this.socketSessionMapping.remove(socketRoomId);
+            }
+        }
     }
 }
