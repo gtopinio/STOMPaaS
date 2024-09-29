@@ -14,6 +14,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * SocketController
  * This handles the WebSocket connection and messaging.
@@ -45,16 +47,18 @@ public class SocketController {
      * @param headerAccessor The SimpMessageHeaderAccessor object containing the message header.
      */
     @MessageMapping("/stomp.linkSocketSession")
-    public SocketSessionResponse linkSocketSession(
-        @Payload SocketDTO input,
-        SimpMessageHeaderAccessor headerAccessor
+    public CompletableFuture<SocketSessionResponse> linkSocketSession(
+            @Payload SocketDTO input,
+            SimpMessageHeaderAccessor headerAccessor
     ) {
-        try {
-            return this.socketService.linkSocketSession(input, headerAccessor);
-        } catch (Exception e) {
-            log.error("Error linking socket session: {}", e.getMessage());
-            return SocketSessionResponseFactory.createErrorResponse(null, e.getMessage());
-        }
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return this.socketService.linkSocketSession(input, headerAccessor);
+            } catch (Exception e) {
+                log.error("Error linking socket session: {}", e.getMessage());
+                return SocketSessionResponseFactory.createErrorResponse(null, e.getMessage());
+            }
+        });
     }
 
     /**
@@ -63,12 +67,14 @@ public class SocketController {
      * @param event The SessionDisconnectEvent object containing the session disconnect event details.
      */
     @EventListener
-    public SocketSessionResponse unlinkSocketSession(SessionDisconnectEvent event) {
-        try {
-            return this.socketService.unlinkSocketSession(event);
-        } catch (Exception e) {
-            log.error("Error unlinking socket session: {}", e.getMessage());
-            return SocketSessionResponseFactory.createErrorResponse(null, e.getMessage());
-        }
+    public CompletableFuture<SocketSessionResponse> unlinkSocketSession(SessionDisconnectEvent event) {
+       return CompletableFuture.supplyAsync(() -> {
+            try {
+                return this.socketService.unlinkSocketSession(event);
+            } catch (Exception e) {
+                log.error("Error unlinking socket session: {}", e.getMessage());
+                return SocketSessionResponseFactory.createErrorResponse(null, e.getMessage());
+            }
+        });
     }
 }
