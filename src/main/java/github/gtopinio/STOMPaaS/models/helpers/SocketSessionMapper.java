@@ -12,7 +12,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class SocketSessionMapper {
-    private final Map<UUID, SocketSessionEntry> socketSessionMapping; // Key: socketRoomId = can be persistent or non-persistent (for random chats)
+    /**
+     * This map is used to store the socket session mapping.
+     * The key is the UUID of the socket room, which says that the chat is active if it exists.
+     */
+    private final Map<UUID, SocketSessionEntry> socketSessionMapping;
 
     public SocketSessionMapper() {
         this.socketSessionMapping = new ConcurrentHashMap<>();
@@ -59,6 +63,8 @@ public class SocketSessionMapper {
 
     /**
      * This method is used for socket sessions that are trying to JOIN a room.
+     * If the return value is true, the user is successfully added to the room.
+     * If the return value is false, the user is already in the room.
      *
      * @param senderSocketId The UUID of the sender socket.
      * @param organizationId The UUID of the organization.
@@ -66,33 +72,52 @@ public class SocketSessionMapper {
      * @param socketRoomId The UUID of the socket room.
      * @param isMultipleUsers The boolean value indicating if the session is for multiple users.
      */
-    public void upsertSocketSession(
+    public UUID upsertSocketSession(
             UUID senderSocketId,
             UUID organizationId,
             List<String> categories,
             UUID socketRoomId,
             Boolean isMultipleUsers
     ) {
-        // Two cases:
-        // 1. For generic chat rooms (private or grouped).
-        //      - User is trying to join a (private/public) session room and is messaging (even without other users)
-        //      - User already has a session room and is messaging
-        //
-        // 2. For anonymous chat rooms (private or grouped).
-        //      - User is trying to join and only has some categories (can be empty) and has isMulti variable
-        //      - User already has a session room id and is messaging
-        if (this.doesSocketRoomExist(socketRoomId)) {
-            // This means that the socket room already exists and a new user is trying to join
-            // Get the existing socket session entry
-            var socketSessionEntry = this.socketSessionMapping.get(socketRoomId);
-            socketSessionEntry.getSocketUserList().add(this.createSocketUser(senderSocketId, organizationId));
-            this.socketSessionMapping.put(socketRoomId, socketSessionEntry);
+        // TODO: Logic with organization ID (involves DB)
+        // TODO: For random-room chats (non-persistent), use category list
 
+        // Check if UUID is active
+        if (this.doesSocketRoomExist(socketRoomId)) {
+            // Existing chat
+
+            // Get the socket session entry
+            SocketSessionEntry socketSessionEntry = this.socketSessionMapping.get(socketRoomId);
+            List<SocketUser> socketUserList = socketSessionEntry.getSocketUserList();
+
+            // Check if the user is already in the room
+            for (SocketUser socketUser : socketUserList) {
+                if (socketUser.getSenderSocketId().equals(senderSocketId)) {
+                    // User is already in the room
+                    return null;
+                }
+            }
+
+            if (
+                (socketSessionEntry.getIsForMultipleUsers() && !isMultipleUsers) ||
+                (!socketSessionEntry.getIsForMultipleUsers() && isMultipleUsers)
+            ) {
+                // Room is for multiple users, but user is trying to join as a single user
+                // Or room is for single user, but user is trying to join as multiple users
+                return null;
+            }
+
+            // Add the user to the room
+            socketUserList.add(this.createSocketUser(senderSocketId, organizationId));
+            socketSessionEntry.setSocketUserList(socketUserList);
+            this.socketSessionMapping.put(socketRoomId, socketSessionEntry);
+            return socketRoomId;
         } else {
-            var socketSessionEntry = this.createSocketSessionEntry(categories, isMultipleUsers);
+            // New chat / Create a new socket session entry
+            SocketSessionEntry socketSessionEntry = this.createSocketSessionEntry(categories, isMultipleUsers);
             socketSessionEntry.getSocketUserList().add(this.createSocketUser(senderSocketId, organizationId));
             this.socketSessionMapping.put(socketRoomId, socketSessionEntry);
+            return socketRoomId;
         }
     }
-
 }
