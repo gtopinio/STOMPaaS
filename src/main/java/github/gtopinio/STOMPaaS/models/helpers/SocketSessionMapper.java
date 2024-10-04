@@ -2,6 +2,7 @@ package github.gtopinio.STOMPaaS.models.helpers;
 
 import github.gtopinio.STOMPaaS.models.classes.SocketSessionEntry;
 import github.gtopinio.STOMPaaS.models.classes.SocketUser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
+@Slf4j
 public class SocketSessionMapper {
     /**
      * This map is used to store the socket session mapping.
@@ -117,6 +119,8 @@ public class SocketSessionMapper {
             SocketSessionEntry socketSessionEntry = this.createSocketSessionEntry(categories, isMultipleUsers);
             socketSessionEntry.getSocketUserList().add(this.createSocketUser(senderSocketId, organizationId));
             this.socketSessionMapping.put(socketRoomId, socketSessionEntry);
+            log.info("Socket room created: {}", socketRoomId);
+            log.info("Socket room mapping: {}", this.socketSessionMapping);
             return socketRoomId;
         }
     }

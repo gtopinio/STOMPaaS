@@ -8,6 +8,7 @@ import github.gtopinio.STOMPaaS.models.factories.SocketSessionResponseFactory;
 import github.gtopinio.STOMPaaS.models.helpers.SocketInputValidator;
 import github.gtopinio.STOMPaaS.models.helpers.SocketSessionMapper;
 import github.gtopinio.STOMPaaS.models.response.SocketSessionResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -19,6 +20,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class SocketService {
     private final SimpMessagingTemplate messagingTemplate;
     private final SocketInputValidator socketInputValidator;
@@ -44,6 +46,8 @@ public class SocketService {
         @Payload SocketDTO input,
         SimpMessageHeaderAccessor headerAccessor
     ) {
+        log.info("Linking socket session");
+        log.info("Input: {}", input.toString());
         // Validate input
         if (!this.socketInputValidator.validate(input)) {
             return SocketSessionResponseFactory.createBadRequestResponse(null, "Invalid input");
@@ -74,6 +78,7 @@ public class SocketService {
 
         this.handleJoinMessage(headerAccessor, input.getSenderSocketId(), input.getSocketRoomId(), responseMessage);
 
+        log.info("Socket session linked successfully");
         return SocketSessionResponseFactory.createSuccessResponse(responseID, "Socket session linked successfully");
     }
 
