@@ -1,5 +1,6 @@
 package github.gtopinio.STOMPaaS.models.DTOs;
 
+import github.gtopinio.STOMPaaS.models.classes.SocketMessage;
 import github.gtopinio.STOMPaaS.models.enums.MessageType;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class SocketDTO {
-    private String messageContent;
+    private SocketMessage socketMessage;
     private String senderUsername; // Can be used for string templates
     private String receiverUsername; // Can be used for string templates
     private UUID senderSocketId; // Should not be null, must be created on the client side

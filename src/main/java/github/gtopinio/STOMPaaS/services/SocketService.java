@@ -133,4 +133,33 @@ public class SocketService {
         this.messagingTemplate.convertAndSend("/topic/" + socketRoomId, message);
     }
 
+    /**
+     * This service method is used to send a message to the desired socket room.
+     *
+     * @param input The SocketDTO object containing the socket message details.
+     */
+    public SocketSessionResponse sendSocketMessage(
+        @Payload SocketDTO input
+    ) {
+        // Validate input
+        if (!this.socketInputValidator.validate(input)) {
+            return SocketSessionResponseFactory.createBadRequestResponse(null, "Invalid input");
+        }
+
+        if (!input.getMessageType().equals(MessageType.MESSAGE)) {
+            return SocketSessionResponseFactory.createBadRequestResponse(null, "Invalid message type when sending socket message");
+        }
+
+        var responseMessage = SocketMessage.builder()
+                .content(input.getSocketMessage().getContent())
+                .senderUsername(input.getSenderUsername())
+                .senderSocketId(input.getSenderSocketId())
+                .type(MessageType.MESSAGE)
+                .build();
+
+        this.broadcastMessage(input.getSocketRoomId(), responseMessage);
+
+        return SocketSessionResponseFactory.createSuccessResponse(null, "Socket message sent successfully");
+    }
+
 }

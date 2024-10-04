@@ -19,12 +19,9 @@ import java.util.concurrent.CompletableFuture;
 /**
  * SocketController
  * This handles the WebSocket connection and messaging.
- * TODO: Implement the following API endpoints:
- * - linkSocketSession (done)
- * - unlinkSocketSession (handles session disconnect event) (done)
- * - sendChatMessage (should use switch based on DTO - handles multi or single recipient)
- * - pingChatTyping (should use switch based on DTO)
- * - other APIS to follow
+ * It is responsible for linking and unlinking the socket session to the desired socket room.
+ * It is also responsible for sending messages to the desired socket room.
+ * It is also responsible for handling the socket session disconnect event.
  */
 
 @Controller
@@ -73,6 +70,25 @@ public class SocketController {
                 return this.socketService.unlinkSocketSession(event);
             } catch (Exception e) {
                 log.error("Error unlinking socket session: {}", e.getMessage());
+                return SocketSessionResponseFactory.createErrorResponse(null, e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * This controller method is used to send a message to the desired socket room.
+     *
+     * @param input The SocketDTO object containing the socket message details.
+     */
+    @MessageMapping("/stomp.sendChatMessage")
+    public CompletableFuture<SocketSessionResponse> sendSocketMessage(
+            @Payload SocketDTO input
+    ) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return this.socketService.sendSocketMessage(input);
+            } catch (Exception e) {
+                log.error("Error sending socket message: {}", e.getMessage());
                 return SocketSessionResponseFactory.createErrorResponse(null, e.getMessage());
             }
         });
