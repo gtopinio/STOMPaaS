@@ -13,7 +13,7 @@ public class SocketInputValidator implements Validator {
     @Override
     public boolean validate(SocketDTO input) {
 
-        if (input.getMessageContent() == null || input.getMessageContent().isEmpty()) {
+        if (input.getSocketMessage() == null || input.getSocketMessage().getContent().isEmpty()) {
             return false;
         }
 
