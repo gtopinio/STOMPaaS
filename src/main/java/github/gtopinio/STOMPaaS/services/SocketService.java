@@ -16,6 +16,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -46,14 +47,14 @@ public class SocketService {
         @Payload SocketDTO input,
         SimpMessageHeaderAccessor headerAccessor
     ) {
-        log.info("Linking socket session");
-        log.info("Input: {}", input.toString());
         // Validate input
         if (!this.socketInputValidator.validate(input)) {
+            log.error("Linking socket session failed: Invalid input");
             return SocketSessionResponseFactory.createBadRequestResponse(null, "Invalid input");
         }
 
         if (!input.getMessageType().equals(MessageType.JOIN)) {
+            log.error("Linking socket session failed: Invalid message type when linking socket session");
             return SocketSessionResponseFactory.createBadRequestResponse(null, "Invalid message type when linking socket session");
         }
 
@@ -66,6 +67,7 @@ public class SocketService {
         );
 
         if (responseID == null) {
+            log.error("Linking socket session failed: Response ID is null");
             return SocketSessionResponseFactory.createErrorResponse(null, "Error linking socket session");
         }
 
@@ -78,7 +80,7 @@ public class SocketService {
 
         this.handleJoinMessage(headerAccessor, input.getSenderSocketId(), input.getSocketRoomId(), responseMessage);
 
-        log.info("Socket session linked successfully");
+        log.info("Linking socket session successful");
         return SocketSessionResponseFactory.createSuccessResponse(responseID, "Socket session linked successfully");
     }
 
@@ -90,8 +92,22 @@ public class SocketService {
     public SocketSessionResponse unlinkSocketSession(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        UUID socketRoomId = UUID.fromString(Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("socketRoomId").toString());
-        UUID senderSocketId = UUID.fromString(Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("senderSocketId").toString());
+        Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
+        if (sessionAttributes == null) {
+            log.error("Unlinking socket session failed: Session attributes are null");
+            return SocketSessionResponseFactory.createErrorResponse(null, "Session attributes are null");
+        }
+
+        Object socketRoomIdObj = sessionAttributes.get("socketRoomId");
+        Object senderSocketIdObj = sessionAttributes.get("senderSocketId");
+
+        if (socketRoomIdObj == null || senderSocketIdObj == null) {
+            log.error("Unlinking socket session failed: Required session attributes are missing");
+            return SocketSessionResponseFactory.createErrorResponse(null, "Required session attributes are missing");
+        }
+
+        UUID socketRoomId = UUID.fromString(socketRoomIdObj.toString());
+        UUID senderSocketId = UUID.fromString(senderSocketIdObj.toString());
 
         if (this.socketSessionMapper.removeSocketSession(senderSocketId, socketRoomId)) {
             var responseMessage = SocketMessage.builder()
@@ -105,6 +121,7 @@ public class SocketService {
             return SocketSessionResponseFactory.createSuccessResponse(null, "Socket session unlinked successfully");
         }
 
+        log.error("Unlinking socket session failed: Removing socket session failed");
         return SocketSessionResponseFactory.createErrorResponse(null, "Error unlinking socket session");
     }
 

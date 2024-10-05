@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.UUID;
 
+@ToString
 @Getter
 @Setter
 @Builder
