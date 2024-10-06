@@ -113,6 +113,8 @@ public class SocketSessionMapper {
             socketUserList.add(this.createSocketUser(senderSocketId, organizationId));
             socketSessionEntry.setSocketUserList(socketUserList);
             this.socketSessionMapping.put(socketRoomId, socketSessionEntry);
+            log.info("Socket room updated: {}", socketRoomId);
+            log.info("Updated Socket room mapping: {}", this.socketSessionMapping);
             return socketRoomId;
         } else {
             // New chat / Create a new socket session entry
@@ -120,7 +122,7 @@ public class SocketSessionMapper {
             socketSessionEntry.getSocketUserList().add(this.createSocketUser(senderSocketId, organizationId));
             this.socketSessionMapping.put(socketRoomId, socketSessionEntry);
             log.info("Socket room created: {}", socketRoomId);
-            log.info("Socket room mapping: {}", this.socketSessionMapping);
+            log.info("Current Socket room mapping: {}", this.socketSessionMapping);
             return socketRoomId;
         }
     }
