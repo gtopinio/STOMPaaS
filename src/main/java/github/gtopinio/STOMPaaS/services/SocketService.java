@@ -118,6 +118,7 @@ public class SocketService {
                     .build();
 
             this.broadcastMessage(socketRoomId, responseMessage);
+            log.info("Unlinking socket session successful");
             return SocketSessionResponseFactory.createSuccessResponse(null, "Socket session unlinked successfully");
         }
 
