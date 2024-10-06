@@ -157,4 +157,8 @@ public class SocketSessionMapper {
             }
         }
     }
+
+    public boolean doesSocketRoomExists(UUID socketRoomId) {
+        return this.socketSessionMapping.containsKey(socketRoomId);
+    }
 }

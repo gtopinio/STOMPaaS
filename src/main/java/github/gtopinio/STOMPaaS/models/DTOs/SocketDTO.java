@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class SocketDTO {
-    private SocketMessage socketMessage;
+    private String socketMessage;
     private String senderUsername; // Can be used for string templates
     private String receiverUsername; // Can be used for string templates
     private UUID senderSocketId; // Should not be null, must be created on the client side

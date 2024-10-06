@@ -114,6 +114,7 @@ public class SocketService {
                     .content("User has left the chat")
                     .senderUsername(UserType.SYSTEM.toString())
                     .senderSocketId(null)
+                    .socketRoomId(socketRoomId)
                     .type(MessageType.LEAVE)
                     .build();
 
@@ -166,22 +167,31 @@ public class SocketService {
     ) {
         // Validate input
         if (!this.socketInputValidator.validate(input)) {
+            log.error("Socket message failed: Invalid input");
             return SocketSessionResponseFactory.createBadRequestResponse(null, "Invalid input");
         }
 
         if (!input.getMessageType().equals(MessageType.MESSAGE)) {
+            log.error("Socket message failed: Invalid message type when sending socket message");
             return SocketSessionResponseFactory.createBadRequestResponse(null, "Invalid message type when sending socket message");
         }
 
+        if (!this.socketSessionMapper.doesSocketRoomExist(input.getSocketRoomId())) {
+            log.error("Socket message failed: Socket room does not exist");
+            return SocketSessionResponseFactory.createErrorResponse(null, "Socket room does not exist");
+        }
+
         var responseMessage = SocketMessage.builder()
-                .content(input.getSocketMessage().getContent())
+                .content(input.getSocketMessage())
                 .senderUsername(input.getSenderUsername())
                 .senderSocketId(input.getSenderSocketId())
+                .socketRoomId(input.getSocketRoomId())
                 .type(MessageType.MESSAGE)
                 .build();
 
         this.broadcastMessage(input.getSocketRoomId(), responseMessage);
 
+        log.info("Socket message sent successfully: {}", input.getSocketMessage());
         return SocketSessionResponseFactory.createSuccessResponse(null, "Socket message sent successfully");
     }
 
