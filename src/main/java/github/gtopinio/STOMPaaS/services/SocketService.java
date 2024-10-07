@@ -16,9 +16,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -171,7 +169,12 @@ public class SocketService {
             return SocketSessionResponseFactory.createBadRequestResponse(null, "Invalid input");
         }
 
-        if (!input.getMessageType().equals(MessageType.MESSAGE)) {
+        MessageType socketMessageType = input.getMessageType();
+
+        MessageType[] validMessageTypes = {MessageType.MESSAGE, MessageType.PING};
+        List<MessageType> validMessageTypesList = Arrays.asList(validMessageTypes);
+
+        if (!validMessageTypesList.contains(socketMessageType)) {
             log.error("Socket message failed: Invalid message type when sending socket message");
             return SocketSessionResponseFactory.createBadRequestResponse(null, "Invalid message type when sending socket message");
         }
@@ -181,18 +184,32 @@ public class SocketService {
             return SocketSessionResponseFactory.createErrorResponse(null, "Socket room does not exist");
         }
 
-        var responseMessage = SocketMessage.builder()
-                .content(input.getSocketMessage())
-                .senderUsername(input.getSenderUsername())
-                .senderSocketId(input.getSenderSocketId())
-                .socketRoomId(input.getSocketRoomId())
-                .type(MessageType.MESSAGE)
-                .build();
+        SocketMessage responseMessage = null;
+
+        if (socketMessageType.equals(MessageType.PING)) {
+            responseMessage = SocketMessage.builder()
+                    .content(input.getSocketMessage())
+                    .senderUsername(input.getSenderUsername())
+                    .senderSocketId(input.getSenderSocketId())
+                    .socketRoomId(input.getSocketRoomId())
+                    .type(MessageType.PING)
+                    .build();
+
+        } else if (socketMessageType.equals(MessageType.MESSAGE)) {
+            responseMessage = SocketMessage.builder()
+                    .content(input.getSocketMessage())
+                    .senderUsername(input.getSenderUsername())
+                    .senderSocketId(input.getSenderSocketId())
+                    .socketRoomId(input.getSocketRoomId())
+                    .type(MessageType.MESSAGE)
+                    .build();
+        }
 
         this.broadcastMessage(input.getSocketRoomId(), responseMessage);
 
         log.info("Socket message sent successfully: {}", input.getSocketMessage());
         return SocketSessionResponseFactory.createSuccessResponse(null, "Socket message sent successfully");
+
     }
 
 }
