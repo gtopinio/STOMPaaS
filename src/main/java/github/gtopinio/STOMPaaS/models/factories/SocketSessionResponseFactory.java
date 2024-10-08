@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import java.util.UUID;
 
 
-public class SocketSessionResponseFactory {
+public class SocketSessionResponseFactory extends ResponseFactory {
 
     public static SocketSessionResponse createSuccessResponse(UUID socketRoomId, String message) {
         return SocketSessionResponse.of(socketRoomId, message, HttpStatus.OK);

@@ -2,13 +2,13 @@ package github.gtopinio.STOMPaaS.models.helpers;
 
 import github.gtopinio.STOMPaaS.models.DTOs.SocketDTO;
 import github.gtopinio.STOMPaaS.models.enums.MessageType;
-import github.gtopinio.STOMPaaS.models.interfaces.Validator;
+import github.gtopinio.STOMPaaS.models.interfaces.SocketValidator;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
-public class SocketInputValidator implements Validator {
+public class SocketInputValidator implements SocketValidator {
 
     @Override
     public boolean validate(SocketDTO input) {

@@ -1,6 +1,5 @@
 package github.gtopinio.STOMPaaS.models.DTOs;
 
-import github.gtopinio.STOMPaaS.models.classes.SocketMessage;
 import github.gtopinio.STOMPaaS.models.enums.MessageType;
 import lombok.*;
 
