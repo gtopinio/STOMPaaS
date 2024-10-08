@@ -55,7 +55,7 @@ public class EmailService {
     }
 
     private String prettifyEmailContent(EmailDTO emailDTO) {
-        return "<h1>STOMPaaS Email Notification</h1>"
+        return "<h1>" + emailDTO.getSubject() + "</h1>"
                 + "<p><b>From:</b> " + emailDTO.getSenderFirstName() + " " + emailDTO.getSenderLastName() + "</p>"
                 + "<p><b>Message:</b></p>"
                 + "<p>" + emailDTO.getMessage() + "</p>";
