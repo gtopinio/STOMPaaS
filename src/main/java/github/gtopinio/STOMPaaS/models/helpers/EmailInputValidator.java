@@ -13,7 +13,7 @@ public class EmailInputValidator implements EmailValidator {
 
     @Override
     public boolean validate(EmailDTO emailDTO) {
-        if (emailDTO.getReceiverEmail() == null || emailDTO.getReceiverEmail().isEmpty()) {
+        if (emailDTO.getSenderEmail() == null || emailDTO.getSenderEmail().isEmpty()) {
             return false;
         }
 
@@ -25,7 +25,15 @@ public class EmailInputValidator implements EmailValidator {
             return false;
         }
 
-        if (!isEmail(emailDTO.getReceiverEmail())) {
+        if (emailDTO.getSenderFirstName() == null || emailDTO.getSenderFirstName().isEmpty()) {
+            return false;
+        }
+
+        if (emailDTO.getSenderLastName() == null || emailDTO.getSenderLastName().isEmpty()) {
+            return false;
+        }
+
+        if (!isEmail(emailDTO.getSenderEmail())) {
             return false;
         }
 
